@@ -4,13 +4,13 @@ module.exports = {
   networks: {
     development: {
       host: "localhost",
-      port: 7545,
+      port: 8545,
       network_id: "*",
       gasPrice: 1000000000
     },
     test: {
       host: "localhost",
-      port: 7545,
+      port: 8545,
       network_id: "*",
       gasPrice: 1000000000
     },

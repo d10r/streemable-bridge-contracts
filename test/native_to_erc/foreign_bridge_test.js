@@ -71,6 +71,49 @@ contract('ForeignBridge', async (accounts) => {
       patch.should.be.bignumber.gte(0)
     })
   })
+
+  describe('#feeDeposit', async () => {
+    const user1 = accounts[7]
+    const user2 = accounts[8]
+
+    beforeEach(async () => {
+      foreignBridge = await ForeignBridge.new()
+      token = await POA20.new("POA ERC20 Foundation", "POA20", 18);
+      const oneEther = web3.toBigNumber(web3.toWei(1, "ether"));
+      const halfEther = web3.toBigNumber(web3.toWei(0.5, "ether"));
+      await foreignBridge.initialize(validatorContract.address, token.address, oneEther, halfEther, minPerTx, gasPrice, requireBlockConfirmations, homeDailyLimit, homeMaxPerTx, owner);
+      oneEther.should.be.bignumber.equal(await foreignBridge.dailyLimit());
+      await token.transferOwnership(foreignBridge.address);
+    })
+    it('should allow to make and withdraw deposits for fees', async () => {
+      const user1BalanceBeforeDeposit = await web3.eth.getBalance(user1)
+      let tx = await foreignBridge.sendTransaction({from: user1, value: 1}).should.be.fulfilled
+      let user1TxFees = new web3.BigNumber(gasPrice).mul(tx.receipt.gasUsed)
+      tx = await foreignBridge.sendTransaction({from: user1, value: 3}).should.be.fulfilled
+      user1TxFees = user1TxFees.add(new web3.BigNumber(gasPrice).mul(tx.receipt.gasUsed))
+      let bridgeBalance = await web3.eth.getBalance(foreignBridge.address)
+      bridgeBalance.should.be.bignumber.equal(4)
+
+      const user2BalanceBeforeDeposit = await web3.eth.getBalance(user2)
+      await foreignBridge.sendTransaction({from: user2, value: 2}).should.be.fulfilled
+      bridgeBalance = await web3.eth.getBalance(foreignBridge.address)
+      bridgeBalance.should.be.bignumber.equal(6)
+
+      // user1 withdraw all
+      tx = await foreignBridge.sendTransaction({from: user1, value: 0}).should.be.fulfilled
+      user1TxFees = user1TxFees.add(new web3.BigNumber(gasPrice).mul(tx.receipt.gasUsed))
+      const user1BalanceAfterWithdraw = await web3.eth.getBalance(user1)
+      //user1BalanceAfterWithdraw.should.be.bignumber.equal(user1BalanceBeforeWithdraw.add(1).sub(txFee))
+      user1BalanceAfterWithdraw.should.be.bignumber.equal(user1BalanceBeforeDeposit.sub(user1TxFees))
+
+      // user2 withdraw all
+      tx = await foreignBridge.sendTransaction({from: user2, value: 0}).should.be.fulfilled
+
+      bridgeBalance = await web3.eth.getBalance(foreignBridge.address)
+      bridgeBalance.should.be.bignumber.equal(0)
+    })
+  })
+
   describe('#executeSignatures', async () => {
     beforeEach(async () => {
       foreignBridge = await ForeignBridge.new()

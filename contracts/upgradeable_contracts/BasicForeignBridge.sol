@@ -28,6 +28,26 @@ contract BasicForeignBridge is EternalStorage, Validatable {
         }
     }
 
+    function () payable public {
+        if(msg.value > 0) {
+            addDeposit();
+        } else {
+            withdrawDeposit();
+        }
+    }
+
+    function addDeposit() payable public {
+        // equivalent to deposits[msg.sender] += msg.value;
+        uintStorage[keccak256(abi.encodePacked("feeDeposits", msg.sender))] += msg.value;
+    }
+
+    function withdrawDeposit() public {
+        uint256 withdrawAmount = uintStorage[keccak256(abi.encodePacked("feeDeposits", msg.sender))];
+        require(withdrawAmount > 0);
+        delete uintStorage[keccak256(abi.encodePacked("feeDeposits", msg.sender))]; // implies setting the value to 0
+        msg.sender.transfer(withdrawAmount); // throws on failure
+    }
+
     function onExecuteMessage(address, uint256) internal returns(bool);
 
     function setRelayedMessages(bytes32 _txHash, bool _status) internal {
