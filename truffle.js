@@ -1,3 +1,5 @@
+const PrivateKeyProvider = require('truffle-privatekey-provider');
+
 module.exports = {
   networks: {
     development: {
@@ -17,6 +19,11 @@ module.exports = {
       port: "8591",
       network_id: "*",
       gas: 4700000,
+      gasPrice: 1000000000
+    },
+    kovan_pk: {
+      provider: () => new PrivateKeyProvider(process.env.PRIVKEY, `https://kovan.infura.io/v3/${process.env.INFURAKEY}`),
+      network_id: "*",
       gasPrice: 1000000000
     },
     core: {
