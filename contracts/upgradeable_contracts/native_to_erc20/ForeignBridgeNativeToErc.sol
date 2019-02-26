@@ -12,6 +12,7 @@ contract ForeignBridgeNativeToErc is ERC677Receiver, BasicBridge, BasicForeignBr
 
     /// Event created on money withdraw.
     event UserRequestForAffirmation(address recipient, uint256 value);
+    event FeeWithdrawal(uint256 amount);
 
     function initialize(
         address _validatorContract,
@@ -44,6 +45,34 @@ contract ForeignBridgeNativeToErc is ERC677Receiver, BasicBridge, BasicForeignBr
         setOwner(_owner);
         setInitialize(true);
         return isInitialized();
+    }
+
+    function executeSignaturesRecipientPays(uint8[] vs, bytes32[] rs, bytes32[] ss, bytes message) external {
+        Message.hasEnoughValidSignatures(message, vs, rs, ss, validatorContract());
+        address recipient = processMessage(message);
+
+        // check if recipient has enough deposits
+        uint256 chargedFee = tx.gasprice * 200000; // 200k gas should always be enough for this tx
+        require(uintStorage[keccak256(abi.encodePacked("feeDeposits", recipient))] >= chargedFee, "not enough fee deposits");
+        // take from fee deposits
+        uintStorage[keccak256(abi.encodePacked("feeDeposits", recipient))] -= chargedFee;
+        uintStorage[keccak256(abi.encodePacked("feeDeposits", owner()))] += chargedFee;
+
+        /*
+         * In case of an Exception in processMessage(), the recipient won't be charged for the failed tx.
+         * This is on purpose. It's the relayer's responsibility to check if the tx would succeed before broadcasting it.
+         * The recipient could game the relayer by having a fee deposit withdrawal tx race against the relay tx.
+         * However there's no economic incentive to do so (relay tx would fail), thus this risk for the relayer
+         * looks acceptable.
+         */
+    }
+
+    function withdrawCollectedFees() external onlyIfOwnerOfProxy {
+        uint256 amount = uintStorage[keccak256(abi.encodePacked("feeDeposits", owner()))];
+        require(amount > 0, "nothing to claim");
+        uintStorage[keccak256(abi.encodePacked("feeDeposits", owner()))] = 0;
+        emit FeeWithdrawal(amount);
+        msg.sender.transfer(amount); // throws on failure
     }
 
     function getBridgeMode() public pure returns(bytes4 _data) {
