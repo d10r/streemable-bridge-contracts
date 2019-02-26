@@ -156,13 +156,18 @@ contract('ForeignBridge', async (accounts) => {
       true.should.be.equal(await foreignBridge.relayedMessages(transactionHash))
     })
 
-    it('should allow owner only to claim collected tx fees', async () => {
-      const ownerBalanceBefore = await web3.eth.getBalance(owner);
-      await foreignBridge.withdrawCollectedFees({from: accounts[1]}).should.be.rejected
-      await foreignBridge.withdrawCollectedFees({from: owner}).should.be.fulfilled
-      const ownerBalanceAfter = await web3.eth.getBalance(owner);
-      ownerBalanceAfter.should.be.bignumber.above(ownerBalanceBefore)
-      await foreignBridge.withdrawCollectedFees({from: owner}).should.be.rejected // nothing left to withdraw
+    it('should allow owner only to withdraw collected tx fees', async () => {
+      const receiver = accounts[6];
+      let collectedFees = await foreignBridge.feeDepositOf(owner);
+      collectedFees.should.be.bignumber.above(0);
+      const receiverBalanceBefore = await web3.eth.getBalance(receiver);
+      await foreignBridge.withdrawCollectedFeesTo(receiver, {from: accounts[1]}).should.be.rejected
+      await foreignBridge.withdrawCollectedFeesTo(receiver, {from: owner}).should.be.fulfilled
+      const receiverBalanceAfter = await web3.eth.getBalance(receiver);
+      receiverBalanceAfter.should.be.bignumber.equal(receiverBalanceBefore.add(collectedFees));
+      collectedFees = await foreignBridge.feeDepositOf(owner);
+      collectedFees.should.be.bignumber.equal(0); // nothing left
+      await foreignBridge.withdrawCollectedFeesTo(receiver, {from: owner}).should.be.rejected // nothing left to withdraw
     })
   })
 

@@ -12,7 +12,7 @@ contract ForeignBridgeNativeToErc is ERC677Receiver, BasicBridge, BasicForeignBr
 
     /// Event created on money withdraw.
     event UserRequestForAffirmation(address recipient, uint256 value);
-    event FeeWithdrawal(uint256 amount);
+    event FeeWithdrawal(address receiver, uint256 amount);
 
     function initialize(
         address _validatorContract,
@@ -67,12 +67,12 @@ contract ForeignBridgeNativeToErc is ERC677Receiver, BasicBridge, BasicForeignBr
          */
     }
 
-    function withdrawCollectedFees() external onlyIfOwnerOfProxy {
+    function withdrawCollectedFeesTo(address receiver) external onlyIfOwnerOfProxy {
         uint256 amount = uintStorage[keccak256(abi.encodePacked("feeDeposits", owner()))];
         require(amount > 0, "nothing to claim");
         uintStorage[keccak256(abi.encodePacked("feeDeposits", owner()))] = 0;
-        emit FeeWithdrawal(amount);
-        msg.sender.transfer(amount); // throws on failure
+        emit FeeWithdrawal(receiver, amount);
+        receiver.transfer(amount); // throws on failure
     }
 
     function getBridgeMode() public pure returns(bytes4 _data) {
