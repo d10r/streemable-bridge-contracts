@@ -77,14 +77,16 @@ contract('ForeignBridge', async (accounts) => {
     const user2 = accounts[8]
 
     beforeEach(async () => {
-      foreignBridge = await ForeignBridge.new()
+      const owner = accounts[0];
       token = await POA20.new("POA ERC20 Foundation", "POA20", 18);
-      const oneEther = web3.toBigNumber(web3.toWei(1, "ether"));
-      const halfEther = web3.toBigNumber(web3.toWei(0.5, "ether"));
+      const foreignBridgeImpl = await ForeignBridge.new();
+      const storageProxy = await EternalStorageProxy.new().should.be.fulfilled;
+      await storageProxy.upgradeTo('1', foreignBridgeImpl.address).should.be.fulfilled
+      foreignBridge = await ForeignBridge.at(storageProxy.address);
       await foreignBridge.initialize(validatorContract.address, token.address, oneEther, halfEther, minPerTx, gasPrice, requireBlockConfirmations, homeDailyLimit, homeMaxPerTx, owner);
-      oneEther.should.be.bignumber.equal(await foreignBridge.dailyLimit());
-      await token.transferOwnership(foreignBridge.address);
+      await token.transferOwnership(foreignBridge.address)
     })
+
     it('should allow to make and withdraw deposits for fees', async () => {
       const user1BalanceBeforeDeposit = await web3.eth.getBalance(user1)
       let tx = await foreignBridge.sendTransaction({from: user1, value: 1}).should.be.fulfilled
