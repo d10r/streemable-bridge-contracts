@@ -21,10 +21,15 @@ module.exports = {
       gas: 4700000,
       gasPrice: 1000000000
     },
-    kovan_pk: {
-      provider: () => new PrivateKeyProvider(process.env.PRIVKEY, `https://kovan.infura.io/v3/${process.env.INFURAKEY}`),
+    kovan_infura: {
+      provider: () => new PrivateKeyProvider(process.env.PRIVKEY || null, `https://kovan.infura.io/v3/${process.env.INFURAKEY}`),
       network_id: "*",
       gasPrice: 1000000000
+    },
+    ethereum_infura: {
+      provider: () => new PrivateKeyProvider(process.env.PRIVKEY || null, `https://mainnet.infura.io/v3/${process.env.INFURAKEY}`),
+      network_id: 1,
+      gasPrice: process.env.GASPRICE_MWEI * 1000000
     },
     core: {
       host: "localhost",
