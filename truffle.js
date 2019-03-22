@@ -24,12 +24,26 @@ module.exports = {
     kovan_infura: {
       provider: () => new PrivateKeyProvider(process.env.PRIVKEY || null, `https://kovan.infura.io/v3/${process.env.INFURAKEY}`),
       network_id: "*",
+      gas: 4700000,
       gasPrice: 1000000000
     },
     ethereum_infura: {
       provider: () => new PrivateKeyProvider(process.env.PRIVKEY || null, `https://mainnet.infura.io/v3/${process.env.INFURAKEY}`),
-      network_id: 1,
-      gasPrice: process.env.GASPRICE_MWEI * 1000000
+      network_id: "1",
+      gas: 4700000,
+      gasPrice: process.env.GASPRICE_MWEI * 1000000,
+    },
+    tau1_rpc: {
+      provider: () => new PrivateKeyProvider(process.env.PRIVKEY || null, 'https://rpc.tau1.artis.network'),
+      network_id: 246785,
+      gas: 4700000,
+      gasPrice: 1000000000
+    },
+    sigma1_rpc: {
+      provider: () => new PrivateKeyProvider(process.env.PRIVKEY || null, 'https://rpc.sigma1.artis.network'),
+      network_id: 246529,
+      gas: 4700000,
+      gasPrice: 1000000000
     },
     core: {
       host: "localhost",
