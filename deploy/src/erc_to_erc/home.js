@@ -9,6 +9,7 @@ const EternalStorageProxy = require('../../../build/contracts/EternalStorageProx
 const BridgeValidators = require('../../../build/contracts/BridgeValidators.json')
 const HomeBridge = require('../../../build/contracts/HomeBridgeErcToErc.json')
 const ERC677BridgeToken = require('../../../build/contracts/ERC677BridgeToken.json')
+const StreemableERC677BridgeToken = require('../../../build/contracts/StreemableERC677BridgeToken.json')
 
 const VALIDATORS = env.VALIDATORS.split(' ')
 
@@ -26,6 +27,7 @@ const {
   BRIDGEABLE_TOKEN_NAME,
   BRIDGEABLE_TOKEN_SYMBOL,
   BRIDGEABLE_TOKEN_DECIMALS,
+  BRIDGEABLE_TOKEN_STREEMABLE,
   FOREIGN_DAILY_LIMIT,
   FOREIGN_MAX_AMOUNT_PER_TX
 } = env
@@ -126,16 +128,16 @@ async function deployHome() {
   assert.strictEqual(Web3Utils.hexToNumber(txUpgradeToHomeBridge.status), 1, 'Transaction Failed')
   homeNonce++
 
-  console.log('\n[Home] deploying Bridgeble token')
+  console.log('\n[Home] deploying ' + (BRIDGEABLE_TOKEN_STREEMABLE ? 'Streemable ' : '') + 'Bridgeable token')
   const erc677token = await deployContract(
-    ERC677BridgeToken,
+    BRIDGEABLE_TOKEN_STREEMABLE ? StreemableERC677BridgeToken : ERC677BridgeToken,
     [BRIDGEABLE_TOKEN_NAME, BRIDGEABLE_TOKEN_SYMBOL, BRIDGEABLE_TOKEN_DECIMALS],
     { from: DEPLOYMENT_ACCOUNT_ADDRESS, network: 'home', nonce: homeNonce }
   )
   homeNonce++
-  console.log('[Home] Bridgeble Token: ', erc677token.options.address)
+  console.log('[Home] ' + (BRIDGEABLE_TOKEN_STREEMABLE ? 'Streemable ' : '') + 'Bridgeable Token: ', erc677token.options.address)
 
-  console.log('\nset bridge contract on ERC677BridgeToken')
+  console.log('\nset bridge contract on ' + (BRIDGEABLE_TOKEN_STREEMABLE ? 'StreemableERC677BridgeToken' : 'ERC677BridgeToken'))
   const setBridgeContractData = await erc677token.methods
     .setBridgeContract(homeBridgeStorage.options.address)
     .encodeABI({ from: DEPLOYMENT_ACCOUNT_ADDRESS })

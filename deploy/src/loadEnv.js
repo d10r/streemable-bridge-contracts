@@ -70,7 +70,8 @@ if (BRIDGE_MODE === 'ERC_TO_ERC') {
     ERC20_TOKEN_ADDRESS: addressValidator(),
     BRIDGEABLE_TOKEN_NAME: envalid.str(),
     BRIDGEABLE_TOKEN_SYMBOL: envalid.str(),
-    BRIDGEABLE_TOKEN_DECIMALS: envalid.num()
+    BRIDGEABLE_TOKEN_DECIMALS: envalid.num(),
+    BRIDGEABLE_TOKEN_STREEMABLE: envalid.bool()
   }
 }
 if (BRIDGE_MODE === 'ERC_TO_NATIVE') {
