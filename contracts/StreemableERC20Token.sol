@@ -7,7 +7,7 @@ import "openzeppelin-solidity/contracts/token/ERC20/ERC20.sol";
  * TODO: check the safety / necessary preconditions of/for arithmetic operations (overflows, uint/int conversions)
  */
 contract StreemableERC20Token is ERC20 {
-    uint256 public totalSupply;
+    uint256 public totalSupply_;
     string public name;
     string public symbol;
     uint8 public decimals;
@@ -66,6 +66,49 @@ contract StreemableERC20Token is ERC20 {
 
         streems.push(Streem(0,0,0,0)); // empty first element for implicit null-like semantics
     }
+
+    // ################## ERC20 interface ##################
+
+    /* copied over from openzeppelin and adapted. TODO: test */
+
+    function totalSupply() public view returns (uint256) {
+        return totalSupply_;
+    }
+
+    mapping (address => mapping (address => uint256)) internal allowed;
+
+    function transferFrom(address _from, address _to, uint256 _value)
+        public
+        returns (bool)
+    {
+        require(_to != address(0));
+        require(_value <= balanceOf(_from));
+        require(_value <= allowed[_from][msg.sender]);
+
+        staticBalances[_from] -= int(_value);
+        staticBalances[_to] += int(_value);
+        allowed[_from][msg.sender] -= _value;
+        emit Transfer(_from, _to, _value);
+        return true;
+    }
+
+    function approve(address _spender, uint256 _value)
+        public
+        returns (bool)
+    {
+        allowed[msg.sender][_spender] = _value;
+        emit Approval(msg.sender, _spender, _value);
+        return true;
+    }
+
+    function allowance(address _owner, address _spender)
+        public
+        view
+        returns (uint256)
+    {
+        return allowed[_owner][_spender];
+    }
+
 
     // ################## Public functions ###################
 

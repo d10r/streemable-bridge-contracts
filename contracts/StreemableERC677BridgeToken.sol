@@ -118,7 +118,7 @@ contract StreemableERC677BridgeToken is
 			return;
 		}
 
-		ERC20 token = ERC20(_token);
+		ERC20Basic token = ERC20Basic(_token);
 		uint256 balance = token.balanceOf(address(this));
 		require(token.transfer(_to, balance));
 	}
@@ -138,7 +138,7 @@ contract StreemableERC677BridgeToken is
 	function _burn(address _who, uint256 _value) internal {
 		require(_value <= balanceOf(_who));
 		staticBalances[_who] -= int(_value);
-		totalSupply -= _value;
+		totalSupply_ -= _value;
 		emit Burn(_who, _value);
 		emit Transfer(_who, address(0), _value);
 	}
@@ -176,12 +176,12 @@ contract StreemableERC677BridgeToken is
 		public
 		returns (bool)
 	{
-		uint256 newTotalSupply = totalSupply + _amount;
+		uint256 newTotalSupply = totalSupply_ + _amount;
 		// this should avoid overflows and underflows caused by internal usage of int256
 		// TODO: check if this does really what's intended (and isn't optimized away or so...)
-		require(uint(int(newTotalSupply)) > totalSupply, "int overflow");
+		require(uint(int(newTotalSupply)) > totalSupply_, "int overflow");
 
-		totalSupply += _amount;
+		totalSupply_ += _amount;
 		staticBalances[_to] += int(_amount);
 		emit Mint(_to, _amount);
 		emit Transfer(address(0), _to, _amount);
