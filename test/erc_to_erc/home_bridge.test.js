@@ -2,7 +2,7 @@ const Web3Utils = require('web3-utils');
 const HomeBridge = artifacts.require("HomeBridgeErcToErc.sol");
 const EternalStorageProxy = artifacts.require("EternalStorageProxy.sol");
 const BridgeValidators = artifacts.require("BridgeValidators.sol");
-const ERC677BridgeToken = artifacts.require("ERC677BridgeToken.sol");
+const ERC677BridgeToken = artifacts.require(process.env.TEST_STREEMABLE_TOKEN ? "StreemableERC677BridgeToken.sol" : "ERC677BridgeToken.sol");
 const {ERROR_MSG, ZERO_ADDRESS} = require('../setup');
 const {createMessage, sign, signatureToVRS} = require('../helpers/helpers');
 const minPerTx = web3.toBigNumber(web3.toWei(0.01, "ether"));
@@ -12,7 +12,6 @@ const oneEther = web3.toBigNumber(web3.toWei(1, "ether"));
 const halfEther = web3.toBigNumber(web3.toWei(0.5, "ether"));
 const foreignDailyLimit = oneEther
 const foreignMaxPerTx = halfEther
-
 
 contract('HomeBridge_ERC20_to_ERC20', async (accounts) => {
   let homeContract, validatorContract, authorities, owner, token;

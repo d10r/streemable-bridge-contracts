@@ -1,4 +1,4 @@
-const POA20 = artifacts.require("ERC677BridgeToken.sol");
+const POA20 = artifacts.require(process.env.TEST_STREEMABLE_TOKEN ? "StreemableERC677BridgeToken.sol" : "ERC677BridgeToken.sol");
 const ERC677ReceiverTest = artifacts.require("ERC677ReceiverTest.sol")
 const { ERROR_MSG, ZERO_ADDRESS} = require('./setup');
 const Web3Utils = require('web3-utils');
@@ -12,6 +12,10 @@ const oneEther = web3.toBigNumber(web3.toWei(1, "ether"));
 const halfEther = web3.toBigNumber(web3.toWei(0.5, "ether"));
 const executionDailyLimit = oneEther
 const executionMaxPerTx = halfEther
+
+if(process.env.TEST_STREEMABLE_TOKEN) {
+  console.log('TESTING STREEMABLE TOKEN')
+}
 
 contract('ERC677BridgeToken', async (accounts) => {
   let token
