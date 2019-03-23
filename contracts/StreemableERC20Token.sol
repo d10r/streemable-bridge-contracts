@@ -114,7 +114,7 @@ contract StreemableERC20Token is ERC20 {
 
     /** ERC-20 compliant function for discrete transfers */
     function transfer(address to, uint256 value) public returns (bool) {
-        assert(value > 0 && balanceOf(msg.sender) >= value);
+        assert(balanceOf(msg.sender) >= value);
         staticBalances[msg.sender] -= int(value);
         staticBalances[to] += int(value);
         emit Transfer(msg.sender, to, value);
