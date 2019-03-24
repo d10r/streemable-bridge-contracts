@@ -15,6 +15,7 @@ contract StreemableERC20Token is ERC20 {
     // the balance per address resulting from discrete transfers and closed streems
     mapping (address => int256) staticBalances;
 
+    // OpenAccount: 0, Concentrator: 1, Deconcentrator: 2
     enum AccountType { OpenAccount, Concentrator, Deconcentrator }
 
     /** relies on the default value being the first item (OpenAccount): https://ethereum.stackexchange.com/a/25805/4298
@@ -59,10 +60,13 @@ contract StreemableERC20Token is ERC20 {
     event StreemClosed(uint256 id, address indexed from, address indexed to, uint256 flowrate, uint256 value, uint256 outstandingValue);
     event StreemsOpened(uint256 startId, uint256 endId, address indexed from, uint256 flowrate);
 
-    constructor(string _name, string _symbol, uint8 _decimals) public {
+    constructor(string _name, string _symbol, uint8 _decimals, uint256 initialSupply) public {
         name = _name;
         symbol = _symbol;
         decimals = _decimals;
+
+        staticBalances[msg.sender] = int(initialSupply);
+        totalSupply_ = initialSupply;
 
         streems.push(Streem(0,0,0,0)); // empty first element for implicit null-like semantics
     }
@@ -186,6 +190,26 @@ contract StreemableERC20Token is ERC20 {
         }
 
         delete streems[id];
+    }
+
+    /**
+     * Closes the last opened streem from the tx sender to the given receiver.
+     * returns false if no such streem exists
+     */
+    function closeLastStreemTo(address receiver) public returns (bool) {
+        // iterating backwards in order to catch the last opened one
+        for(uint256 i=outStreemPtrs[msg.sender].length-1; i>=0; i--) {
+            uint256 id = outStreemPtrs[msg.sender][i];
+            Streem storage s = streems[id];
+            if(exists(s)) {
+                if(s.receiver == receiver) {
+                    // found a streem which is still open and has matching receiver -> close it
+                    closeStreem(id);
+                    return true;
+                }
+            }
+        }
+        return false;
     }
 
     /** Batch close streems for deconcentrator accounts

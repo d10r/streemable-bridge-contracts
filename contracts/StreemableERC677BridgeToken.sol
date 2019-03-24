@@ -21,7 +21,7 @@ contract StreemableERC677BridgeToken is
 
 	constructor(string _name, string _symbol, uint8 _decimals)
 		public
-		StreemableERC20Token(_name, _symbol, _decimals)
+		StreemableERC20Token(_name, _symbol, _decimals, 0)
 	{}
 
 	function setBridgeContract(address _bridgeContract)
