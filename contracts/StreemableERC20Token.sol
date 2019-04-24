@@ -264,7 +264,7 @@ contract StreemableERC20Token is ERC20 {
 
     function balanceOf(address acc) public constant returns (uint256) {
         uint256 cumInStreemBal = cumulatedInStreemsBalance(acc);
-        var (cumExpOutStreemsBal, cumExpOutStreemsFlowrate) = cumulatedExpectedOutStreemsBalanceAndFlowrate(acc);
+        (uint cumExpOutStreemsBal, uint cumExpOutStreemsFlowrate) = cumulatedExpectedOutStreemsBalanceAndFlowrate(acc);
 
         if(staticBalances[acc] + int(cumInStreemBal) >= int(cumExpOutStreemsBal)) {
             return uint(staticBalances[acc] + int(cumInStreemBal) - int(cumExpOutStreemsBal));
@@ -289,7 +289,7 @@ contract StreemableERC20Token is ERC20 {
 
     /** checks if the account has at least the specified balance */
     function hasMinBalance(address acc, uint256 minBal) public constant returns (bool) {
-        var (cumExpOutStreemsBal, ) = cumulatedExpectedOutStreemsBalanceAndFlowrate(acc);
+        (uint cumExpOutStreemsBal, ) = cumulatedExpectedOutStreemsBalanceAndFlowrate(acc);
         Streem[] memory openInStreems = getInStreemsOf(acc);
         int256 tmpBal = staticBalances[acc] - int(cumExpOutStreemsBal);
 
@@ -474,7 +474,7 @@ contract StreemableERC20Token is ERC20 {
      * This takes the perspective of the sender, making the streem under investigation an outgoing streem.
      */
     function streemBalance(Streem s) internal constant returns (uint256) {
-        var (cumExpOutBalance, cumOutFlowrate) =
+        (uint cumExpOutBalance, uint cumOutFlowrate) =
         accountTypes[s.sender] == AccountType.Deconcentrator ?
         (deconcentratorSnapshots[s.sender].cumulatedExpStreemBalance, deconcentratorSnapshots[s.sender].cumulatedExpFlowrate)
     : cumulatedExpectedOutStreemsBalanceAndFlowrate(s.sender);
