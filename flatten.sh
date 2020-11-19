@@ -20,3 +20,5 @@ mkdir -p flats/erc20_to_native
 ./node_modules/.bin/truffle-flattener contracts/upgradeability/EternalStorageProxy.sol > flats/EternalStorageProxy_flat.sol
 ./node_modules/.bin/truffle-flattener contracts/upgradeable_contracts/BridgeValidators.sol > flats/BridgeValidators_flat.sol
 ./node_modules/.bin/truffle-flattener contracts/ERC677BridgeToken.sol > flats/ERC677BridgeToken_flat.sol
+
+./node_modules/.bin/truffle-flattener contracts/StreemableERC677BridgeToken.sol > flats/StreemableERC677BridgeToken_flat.sol
